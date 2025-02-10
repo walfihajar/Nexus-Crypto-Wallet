@@ -2,7 +2,7 @@
 
 ![Nexus Crypto Wallet Banner](https://source.unsplash.com/1200x400/?cryptocurrency,finance)
 
-🚀 **Nexus Crypto Wallet** est une plateforme simplifiée de gestion des cryptomonnaies permettant aux utilisateurs d'importer, gérer et effectuer des transactions de cryptomonnaies en toute sécurité.
+🚀 **Nexus Crypto Wallet** est une plateforme de gestion simplifiée des cryptomonnaies, permettant aux utilisateurs de suivre les prix en temps réel, gérer un portefeuille sécurisé et effectuer des transactions rapides en USDT.
 
 ## 🌟 Fonctionnalités principales
 
@@ -55,23 +55,6 @@
 
 ![Interface utilisateur](https://source.unsplash.com/800x400/?dashboard,crypto)
 
-## 📌 Installation & Lancement
-
-### 📥 1. Cloner le projet
-```bash
-git clone https://github.com/votre-repository/NexusCryptoWallet.git
-cd NexusCryptoWallet
-```
-
-### ⚙️ 2. Configurer l'environnement
-- **Base de données** : Importer `database/nexus_wallet.sql` dans MySQL
-- **Fichier `.env`** : Ajouter les informations de connexion
-
-### 🚀 3. Lancer le serveur local
-```bash
-php -S localhost:8000 -t public/
-```
-Ouvrir `http://localhost:8000/` dans le navigateur.
 
 ## 📜 Diagrammes UML
 
@@ -83,11 +66,8 @@ Ouvrir `http://localhost:8000/` dans le navigateur.
 
 ## 📢 Contributeurs
 👤 **Hajar Walfi**
-
-📧 Contact : [abdeladim.abid1@gmail.com](mailto:abdeladim.abid1@gmail.com)
-
-## 📄 Licence
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-🚀 *Développé avec passion par l'équipe Nexus Crypto Wallet !* 🎉
+👤 **Mina Elkhotfi**
+👤 **Abdelmalek Labid**
+👤 **Achraf Chehboun**
+👤 **Yassine Marzouk**
+👤 **Ilyas Bahsi**
