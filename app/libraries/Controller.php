@@ -8,11 +8,11 @@ class Controller {
     protected $db;
 
     public function __construct() {
-        // 3yt 3La db
+        // 3yt 3La db 😊
         $this->db = new Database;
     }
 
-    // charger model
+    // charger model 😁
     public function model($model){
       // lassa9 model file
       require_once '../app/models/' . $model . '.php';
@@ -28,7 +28,7 @@ class Controller {
       if(file_exists('../app/views/' . $view . '.php')){
         require_once '../app/views/' . $view . '.php';
       } else {
-        // View does not exist
+        // View does not exist am3alm 😒
         die('View does not exist');
       }
     }
