@@ -2,7 +2,7 @@
 
 namespace App\Libraries;
 
-// use App\Libraries\Database;
+use App\Libraries\Database;
 
 class Controller {
     protected $db;
