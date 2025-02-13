@@ -56,5 +56,23 @@ class Transaction
         }
         return [];
     }
+    
+    public function addTransaction($data) {
+        $this->db->query("INSERT INTO transactions 
+                         (user_id, crypto_id, type_id, amount, price, recipient_id) 
+                         VALUES 
+                         (:user_id, :crypto_id, 
+                          (SELECT id FROM transaction_types WHERE name = :type), 
+                          :amount, :price, :recipient_id)");
+
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':crypto_id', $data['crypto_id']);
+        $this->db->bind(':type', $data['type']);
+        $this->db->bind(':amount', $data['amount']);
+        $this->db->bind(':price', $data['price'] ?? null);
+        $this->db->bind(':recipient_id', $data['recipient_id'] ?? null);
+
+        return $this->db->execute();
+    }
 
 }
