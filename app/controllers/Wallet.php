@@ -19,5 +19,24 @@ class Wallet extends Controller {
         $this->transactionModel = new Transaction();
         $this->cryptoModel = new Cryptocurrency();
     }
+    public function index() {
+        if(!isLoggedIn()) {
+            redirect('auth/login');
+        }
+
+        $userId = $_SESSION['user_id'];
+        error_log("User ID in session: " . $userId);
+
+        $transactions = $this->transactionModel->getUserTransactions($userId, 10);
+        error_log("Transactions: " . print_r($transactions, true));
+
+        $data = [
+            'wallets' => $this->walletModel->getUserWallets($userId),
+            'transactions' => $transactions,
+            'cryptocurrencies' => $this->cryptoModel->getAllCryptos()
+        ];
+
+        $this->view('wallet/index', $data);
+    }
 
 }
