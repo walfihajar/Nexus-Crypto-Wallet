@@ -39,4 +39,33 @@ class Wallet extends Controller {
         $this->view('wallet/index', $data);
     }
 
+    public function deposit() {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            $amount = floatval(trim($_POST['amount']));
+            
+            if($amount <= 0) {
+                flash('deposit_error', 'Invalid amount');
+                redirect('wallet');
+                return;
+            }
+
+            $usdt = $this->cryptoModel->findBySymbol('USDT');
+            if(!$usdt) {
+                flash('deposit_error', 'System error');
+                redirect('wallet');
+                return;
+            }
+
+            if($this->walletModel->deposit($_SESSION['user_id'], $usdt->id, $amount)) {
+                flash('deposit_success', 'Deposit successful');
+            } else {
+                flash('deposit_error', 'Deposit failed');
+            }
+
+            redirect('wallet');
+        }
+    }
+
 }
