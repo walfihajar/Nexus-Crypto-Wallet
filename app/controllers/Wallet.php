@@ -93,4 +93,30 @@ class Wallet extends Controller {
         }
     }
 
+    public function sell() {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            $cryptoId = intval(trim($_POST['crypto_id']));
+            $amount = floatval(trim($_POST['amount']));
+            
+            $crypto = $this->cryptoModel->findById($cryptoId);
+            if(!$crypto) {
+                flash('trade_error', 'Invalid cryptocurrency');
+                redirect('wallet');
+                return;
+            }
+
+            $value = $amount * $crypto->price;
+            if($this->walletModel->executeTrade($_SESSION['user_id'], $cryptoId, $amount, 'SELL', $value)) {
+                flash('trade_success', 'Sale successful');
+            } else {
+                flash('trade_error', 'Insufficient balance or trade failed');
+            }
+
+            redirect('wallet');
+        }
+    }
+
+
 }
