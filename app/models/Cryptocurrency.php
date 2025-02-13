@@ -5,8 +5,8 @@ use App\Libraries\DataBaseManager;
 
 class Cryptocurrency {
     private $dbmanager;
-    
-    public function __construct($dbmanager) {
+
+    public function __construct() {
         $this->dbmanager= new DataBaseManager;
     }
 
@@ -15,31 +15,27 @@ class Cryptocurrency {
     // }
 
     public function findById($id) {
-        $this->dbmanager->selectBy('cryptocurrencies')
-     
-        return
+        return  $this->dbmanager->selectBy('cryptocurrencies' , ['id'=>$id]) ;
     }
 
     public function findBySymbol($symbol) {
-        $this->dbmanager->query("SELECT * FROM cryptocurrencies WHERE symbol = :symbol");
-        $this->dbmanager->bind(':symbol', $symbol);
-        return $this->dbmanager->single();
+        return  $this->dbmanager->selectBy('cryptocurrencies' , ['symbol'=>$symbol]) ;
     }
 
-    public function updatePrice($id, $price) {
-        $this->dbmanager->query("UPDATE cryptocurrencies 
-                         SET price = :price, 
-                             updated_at = CURRENT_TIMESTAMP 
-                         WHERE id = :id");
-        
-        $this->dbmanager->bind(':id', $id);
-        $this->dbmanager->bind(':price', $price);
-        
-        return $this->dbmanager->execute();
-    }
+//    public function updatePrice($id, $price) {
+//        $this->dbmanager->query("UPDATE cryptocurrencies
+//                         SET price = :price,
+//                             updated_at = CURRENT_TIMESTAMP
+//                         WHERE id = :id");
+//
+//        $this->dbmanager->bind(':id', $id);
+//        $this->dbmanager->bind(':price', $price);
+//
+//        return $this->dbmanager->execute();
+//    }
 
     public function getAllCryptos() {
-        $this->dbmanager->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC");
+        $this->dbmanager->getConnection()->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC");
         return $this->dbmanager->resultSet();
     }
 
@@ -52,7 +48,7 @@ class Cryptocurrency {
         }, $result);
     }
 
-    // hna dima kandir update l cyrpto 
+    // hna dima kandir update l cyrpto
     public function updateCryptoData($id, $data) {
         $this->dbmanager->query("UPDATE cryptocurrencies SET 
             price = :price,
@@ -74,7 +70,7 @@ class Cryptocurrency {
 
     public function updateOrInsert($data) {
         // Check if crypto kayn 😁
-        $this->dbmanager->query("SELECT id FROM cryptocurrencies WHERE slug = :slug");
+        $this->dbmanager->getConnection()->query("SELECT id FROM cryptocurrencies WHERE slug = :slug");
         $this->dbmanager->bind(':slug', $data['slug']);
         $crypto = $this->dbmanager->single();
 
@@ -108,4 +104,4 @@ class Cryptocurrency {
 
         return $this->dbmanager->execute();
     }
-} 
+}
