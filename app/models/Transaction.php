@@ -88,4 +88,32 @@ class Transaction
         ]);
     }
 
-}
+    public function createTransferTransaction($senderId, $receiverId, $cryptoId, $amount) {
+        $this->db->beginTransaction();
+
+        try {
+            $this->createTransaction([
+                'user_id' => $senderId,
+                'crypto_id' => $cryptoId,
+                'type' => 'send',
+                'amount' => $amount,
+                'price' => 0 
+                ]);
+
+            $this->createTransaction([
+                'user_id' => $receiverId,
+                'crypto_id' => $cryptoId,
+                'type' => 'receive',
+                'amount' => $amount,
+                'price' => 0
+            ]);
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
+    }
+} 
+
