@@ -118,5 +118,56 @@ class Wallet extends Controller {
         }
     }
 
+    public function transfer() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('wallet');
+        }
 
+        try {
+            $userId = $_SESSION['user_id'];
+            
+            $data = [
+                'recipient' => trim($_POST['recipient']),
+                'crypto_id' => trim($_POST['crypto_id']),
+                'amount' => floatval(trim($_POST['amount'])),
+                'errors' => [],
+                'wallets' => $this->walletModel->getUserWallets($userId),
+                'transactions' => $this->transactionModel->getUserTransactions($userId, 10),
+                'cryptocurrencies' => $this->cryptoModel->getAllCryptos()
+            ];
+
+            if ($data['amount'] <= 0) {
+                $data['errors']['amount'] = 'Amount must be greater than 0';
+            }
+            $userModel = new \App\Models\User();
+            $recipient = $userModel->findUserByEmailOrNexusId($data['recipient']);
+            
+            if (!$recipient) {
+                $data['errors']['recipient'] = 'Recipient not found';
+            }
+
+            if ($recipient && $recipient->id === $userId) {
+                $data['errors']['recipient'] = 'Cannot send to yourself';
+            }
+
+            if (empty($data['errors'])) {
+                $this->walletModel->transfer(
+                    $userId,
+                    $recipient->id,
+                    $data['crypto_id'],
+                    $data['amount']
+                );
+
+                flash('wallet_success', 'Transfer completed successfully');
+                redirect('wallet');
+            } else {
+                flash('wallet_error', 'Please correct the errors below', 'alert alert-danger');
+                $this->view('wallet/index', $data);
+            }
+
+        } catch (\Exception $e) {
+            flash('wallet_error', 'Transfer failed: ' . $e->getMessage(), 'alert alert-danger');
+            redirect('wallet');
+        }
+    }
 }
