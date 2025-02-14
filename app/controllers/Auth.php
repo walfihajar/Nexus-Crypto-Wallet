@@ -95,4 +95,92 @@ class Auth extends Controller{
         // Load view
         $this->view('auth/login', $data);
     }
+    // w hadi hiya dyal register 👍
+    public function register() {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Process form
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+            // Init data
+            $data = [
+                'firstname' => trim($_POST['firstname']),
+                'lastname' => trim($_POST['lastname']),
+                'email' => trim($_POST['email']),
+                'password' => trim($_POST['password']),
+                'confirm_password' => trim($_POST['confirm_password']),
+                'birth_date' => trim($_POST['birth_date']),
+                'errors' => []
+            ];
+
+            // Validate data
+            if(empty($data['firstname'])) {
+                $data['errors']['firstname'] = 'Please enter your first name';
+            }
+
+            if(empty($data['lastname'])) {
+                $data['errors']['lastname'] = 'Please enter your last name';
+            }
+
+            if(empty($data['email'])) {
+                $data['errors']['email'] = 'Please enter your email';
+            } elseif(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $data['errors']['email'] = 'Please enter a valid email';
+            }
+
+            if(empty($data['password'])) {
+                $data['errors']['password'] = 'Please enter a password';
+            } elseif(strlen($data['password']) < 6) {
+                $data['errors']['password'] = 'Password must be at least 6 characters';
+            }
+
+            if($data['password'] != $data['confirm_password']) {
+                $data['errors']['confirm_password'] = 'Passwords do not match';
+            }
+
+            if(empty($data['birth_date'])) {
+                $data['errors']['birth_date'] = 'Please enter your birth date';
+            }
+
+            // Make sure no errors
+            if(empty($data['errors'])) {
+                // Hash Password
+                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+
+                try {
+                    // Register User
+                    $result = $this->userModel->signup($data);
+                    error_log("Signup result: " . print_r($result, true));
+
+                    if($result) {
+                        flash('register_success', 'You are registered. Please check your email for verification.');
+                        redirect('auth/login');
+                    } else {
+                        flash('register_error', 'Something went wrong. Please try again.');
+                        $this->view('auth/register', $data);
+                    }
+                } catch (\Exception $e) {
+                    error_log("Registration error: " . $e->getMessage());
+                    flash('register_error', 'Registration failed. Please try again.');
+                    $this->view('auth/register', $data);
+                }
+            } else {
+                // Load view with errors
+                $this->view('auth/register', $data);
+            }
+        } else {
+            // Init data
+            $data = [
+                'firstname' => '',
+                'lastname' => '',
+                'email' => '',
+                'password' => '',
+                'confirm_password' => '',
+                'birth_date' => '',
+                'errors' => []
+            ];
+
+            // Load view
+            $this->view('auth/register', $data);
+        }
+    }
 }
