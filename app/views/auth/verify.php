@@ -1,7 +1,7 @@
 <?php require APPROOT . '/views/inc/header.php'; ?>
 
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-<div class="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-xl">
+    <div class="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-xl">
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
                 Verify Your Account
