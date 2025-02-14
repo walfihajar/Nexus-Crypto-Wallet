@@ -236,4 +236,12 @@ class Auth extends Controller{
         session_destroy();
         redirect('auth/login');
     }
+
+    private function createUserSession($user) {
+        error_log("Creating session for user: " . print_r($user, true));
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['user_email'] = $user->email;
+        $_SESSION['user_name'] = $user->firstname . ' ' . $user->lastname;
+    }
+    
 }
