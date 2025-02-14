@@ -183,4 +183,49 @@ class Auth extends Controller{
             $this->view('auth/register', $data);
         }
     }
+
+    public function verify() {
+        // Only allow access if user is logged in but not verified
+        if(!isset($_SESSION['user_id']) || (isset($_SESSION['verified']) && $_SESSION['verified'])) {
+            redirect('');
+        }
+
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            $code = trim($_POST['code']);
+            $userId = $_SESSION['user_id'];
+            
+            if($this->userModel->verifyEmail($userId, $code)) {
+                // Update session to mark user as verified
+                $_SESSION['verified'] = true;
+                
+                // Get full user data
+                $user = $this->userModel->getUserById($userId);
+                $this->createUserSession($user);
+                
+                flash('login_success', 'Email verified successfully!');
+                redirect('');
+            } else {
+                flash('verify_error', 'Invalid verification code', 'bg-red-900/50 text-red-400 p-3 rounded-md text-sm');
+                redirect('auth/verify');
+            }
+        }
+
+        $this->view('auth/verify', ['email' => $_SESSION['user_email']]);
+    }
+
+    public function resendVerification() {
+        if(!isset($_SESSION['user_id']) || (isset($_SESSION['verified']) && $_SESSION['verified'])) {
+            redirect('');
+        }
+
+        if($this->userModel->sendVerificationEmail($_SESSION['user_id'])) {
+            flash('verify_success', 'Verification code sent successfully');
+        } else {
+            flash('verify_error', 'Failed to send verification code');
+        }
+
+        redirect('auth/verify');
+    }
 }
