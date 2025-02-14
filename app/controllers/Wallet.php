@@ -14,7 +14,6 @@ class Wallet extends Controller {
         if(!isLoggedIn()) {
             redirect('auth/login');
         }
-
         $this->walletModel = new WalletModel();
         $this->transactionModel = new Transaction();
         $this->cryptoModel = new Cryptocurrency();
