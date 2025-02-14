@@ -100,5 +100,7 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
 <?php require APPROOT . '/views/inc/footer.php'; ?>
