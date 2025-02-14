@@ -1,13 +1,17 @@
 <?php
 namespace App\Models;
 
+use App\Libraries\Database;
 use App\Libraries\DataBaseManager;
 
 class Cryptocurrency {
     private $dbmanager;
+    private $db;
 
     public function __construct() {
         $this->dbmanager= new DataBaseManager;
+        $this->db = DataBase::getInstance();
+
     }
 
     // public function getAll() {
@@ -41,8 +45,8 @@ class Cryptocurrency {
 
     public function getTopCryptos($limit = 10) {
         $this->dbmanager->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC LIMIT :limit");
-        $this->dbmanager->bind(':limit', $limit);
-        $result = $this->dbmanager->resultSet();
+        $this->d->bind(':limit', $limit);
+        $result = $this->db->resultSet();
         return array_map(function($crypto) {
             return (array) $crypto;
         }, $result);
@@ -70,10 +74,13 @@ class Cryptocurrency {
 
     public function updateOrInsert($data) {
         // Check if crypto kayn 😁
-        $this->dbmanager->getConnection()->query("SELECT id FROM cryptocurrencies WHERE slug = :slug");
-        $this->dbmanager->bind(':slug', $data['slug']);
-        $crypto = $this->dbmanager->single();
+//        $this->dbmanager->getConnection()->query("SELECT id FROM cryptocurrencies WHERE slug = 'bitcoin' ");
+//        $this->db->bind(':slug', $data['slug'] ; pdo);
+//        $crypto = $this->dbmanager->getConnection()->single();
 
+        $crypto =  $this->dbmanager->selectBy('cryptocurrencies' , ['slug'=>$data['slug']]) ;
+        var_dump($crypto);
+        die();
         if($crypto) {
             // Update existing crypto
             $this->dbmanager->query("UPDATE cryptocurrencies SET 
