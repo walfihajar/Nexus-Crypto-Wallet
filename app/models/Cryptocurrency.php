@@ -1,68 +1,57 @@
 <?php
-
 namespace App\Models;
 
-use App\Libraries\Database;
-use App\Libraries\DataBaseManager;
-
-class Cryptocurrency
-{
-    private $dbmanager;
+class Cryptocurrency {
     private $db;
-
-    public function __construct()
-    {
-        $this->dbmanager = new DataBaseManager;
-        $this->db = DataBase::getInstance();
-
+    
+    public function __construct() {
+        $this->db = new \App\Libraries\Database;
     }
 
-    // public function getAll() {
-    //     return $this->getAllCryptos();
-    // }
-
-    public function findById($id)
-    {
-        return $this->dbmanager->selectBy('cryptocurrencies', ['id' => $id]);
+    public function getAll() {
+        return $this->getAllCryptos();
     }
 
-    public function findBySymbol($symbol)
-    {
-        return $this->dbmanager->selectBy('cryptocurrencies', ['symbol' => $symbol]);
+    public function findById($id) {
+        $this->db->query("SELECT * FROM cryptocurrencies WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
     }
 
-//    public function updatePrice($id, $price) {
-//        $this->dbmanager->query("UPDATE cryptocurrencies
-//                         SET price = :price,
-//                             updated_at = CURRENT_TIMESTAMP
-//                         WHERE id = :id");
-//
-//        $this->dbmanager->bind(':id', $id);
-//        $this->dbmanager->bind(':price', $price);
-//
-//        return $this->dbmanager->execute();
-//    }
-
-    public function getAllCryptos()
-    {
-        $this->dbmanager->getConnection()->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC");
-        return $this->dbmanager->resultSet();
+    public function findBySymbol($symbol) {
+        $this->db->query("SELECT * FROM cryptocurrencies WHERE symbol = :symbol");
+        $this->db->bind(':symbol', $symbol);
+        return $this->db->single();
     }
 
-    public function getTopCryptos($limit = 10)
-    {
-        $this->dbmanager->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC LIMIT :limit");
-        $this->d->bind(':limit', $limit);
+    public function updatePrice($id, $price) {
+        $this->db->query("UPDATE cryptocurrencies 
+                         SET price = :price, 
+                             updated_at = CURRENT_TIMESTAMP 
+                         WHERE id = :id");
+        
+        $this->db->bind(':id', $id);
+        $this->db->bind(':price', $price);
+        
+        return $this->db->execute();
+    }
+
+    public function getAllCryptos() {
+        $this->db->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC");
+        return $this->db->resultSet();
+    }
+
+    public function getTopCryptos($limit = 10) {
+        $this->db->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC LIMIT :limit");
+        $this->db->bind(':limit', $limit);
         $result = $this->db->resultSet();
-        return array_map(function ($crypto) {
-            return (array)$crypto;
+        return array_map(function($crypto) {
+            return (array) $crypto;
         }, $result);
     }
 
-    // hna dima kandir update l cyrpto
-    public function updateCryptoData($id, $data)
-    {
-        $this->dbmanager->query("UPDATE cryptocurrencies SET 
+    public function updateCryptoData($id, $data) {
+        $this->db->query("UPDATE cryptocurrencies SET 
             price = :price,
             market_cap = :market_cap,
             volume_24 = :volume_24,
@@ -70,60 +59,50 @@ class Cryptocurrency
             max_supply = :max_supply
             WHERE id = :id");
 
-        $this->dbmanager->bind(':id', $id);
-        $this->dbmanager->bind(':price', $data['price']);
-        $this->dbmanager->bind(':market_cap', $data['market_cap']);
-        $this->dbmanager->bind(':volume_24', $data['volume_24']);
-        $this->dbmanager->bind(':circulating_supply', $data['circulating_supply']);
-        $this->dbmanager->bind(':max_supply', $data['max_supply']);
+        $this->db->bind(':id', $id);
+        $this->db->bind(':price', $data['price']);
+        $this->db->bind(':market_cap', $data['market_cap']);
+        $this->db->bind(':volume_24', $data['volume_24']);
+        $this->db->bind(':circulating_supply', $data['circulating_supply']);
+        $this->db->bind(':max_supply', $data['max_supply']);
 
-        return $this->dbmanager->execute();
+        return $this->db->execute();
     }
 
-    public function updateOrInsert($data)
-    {
-        // Check if crypto kayn 😁
-//        $this->dbmanager->getConnection()->query("SELECT id FROM cryptocurrencies WHERE slug = 'bitcoin' ");
-//        $this->db->bind(':slug', $data['slug'] ; pdo);
-//        $crypto = $this->dbmanager->getConnection()->single();
+    public function updateOrInsert($data) {
+      
+        $this->db->query("SELECT id FROM cryptocurrencies WHERE slug = :slug");
+        $this->db->bind(':slug', $data['slug']);
+        $crypto = $this->db->single();
 
-        $crypto = $this->dbmanager->selectBy('cryptocurrencies', ['slug' => $data['slug']]);
-        var_dump($crypto);
-
-        if ($crypto) {
-            // Update existing crypto
-
-
-            $dataUpdate = [
-                'name' => $data['name'],
-                'symbol' => $data['symbol'], // Correction ici
-                'price' => $data['price'],
-                'market_cap' => $data['market_cap'],
-                'volume_24' => $data['volume_24'],
-                'circulating_supply' => $data['circulating_supply'],
-                'max_supply' => $data['max_supply']
-            ];
-            $wheredataUpdate = ['slug' => $data['slug']];
-
-
-            $this->dbmanager->update('cryptocurrencies', $dataUpdate, $wheredataUpdate);
-
-
+        if($crypto) {
+          
+            $this->db->query("UPDATE cryptocurrencies SET 
+                name = :name,
+                symbol = :symbol,
+                price = :price,
+                market_cap = :market_cap,
+                volume_24 = :volume_24,
+                circulating_supply = :circulating_supply,
+                max_supply = :max_supply
+                WHERE slug = :slug");
         } else {
             // Insert new crypto
-            $dataInsert = 
-                ['name' => $data['name'],
-                'symbol' => $data['symbol'],
-                'slug' => $data['symbol'],
-                 'price' => $data['price'],
-                'market_cap' => $data['market_cap'],
-                'volume_24' => $data['volume_24'],
-                'circulating_supply' => $data['circulating_supply'],
-                'max_supply' => $data['max_supply']];
+            $this->db->query("INSERT INTO cryptocurrencies 
+                (name, symbol, slug, price, market_cap, volume_24, circulating_supply, max_supply) 
+                VALUES 
+                (:name, :symbol, :slug, :price, :market_cap, :volume_24, :circulating_supply, :max_supply)");
+        }
 
-            return   $this->dbmanager->insert('cryptocurrencies', $dataInsert);}
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':symbol', $data['symbol']);
+        $this->db->bind(':slug', $data['slug']);
+        $this->db->bind(':price', $data['price']);
+        $this->db->bind(':market_cap', $data['market_cap']);
+        $this->db->bind(':volume_24', $data['volume_24']);
+        $this->db->bind(':circulating_supply', $data['circulating_supply']);
+        $this->db->bind(':max_supply', $data['max_supply']);
 
-
-        
+        return $this->db->execute();
     }
-}
+} 
