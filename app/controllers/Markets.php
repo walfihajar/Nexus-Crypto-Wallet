@@ -12,9 +12,9 @@ class Markets extends Controller {
     private $cryptoService;
 
     public function __construct() {
-//        if(!isLoggedIn()) {
-//            redirect('auth/login');
-//        }
+       if(!isLoggedIn()) {
+           redirect('auth/login');
+       }
         
         $this->cryptoModel = new Cryptocurrency();
         $this->watchlistModel = new Watchlist();
