@@ -1,10 +1,9 @@
 <?php
-namespace App\Controllers;
+namespace App\controllers;
 
-use App\Libraries\Controller;
-use App\Models\Transaction;
-use App\Models\Cryptocurrency;
-use App\Models\Wallet as WalletModel;
+use App\libraries\Controller;
+use App\models\Transaction;
+use App\models\Wallet as WalletModel;
 
 class Wallet extends Controller {
     private $walletModel;
@@ -15,13 +14,10 @@ class Wallet extends Controller {
         if(!isLoggedIn()) {
             redirect('auth/login');
         }
-        
         $this->walletModel = new WalletModel();
         $this->transactionModel = new Transaction();
         $this->cryptoModel = new Cryptocurrency();
     }
-
-
     public function index() {
         if(!isLoggedIn()) {
             redirect('auth/login');
@@ -30,7 +26,6 @@ class Wallet extends Controller {
         $userId = $_SESSION['user_id'];
         error_log("User ID in session: " . $userId);
 
-        //  jib transaction mn transaction model
         $transactions = $this->transactionModel->getUserTransactions($userId, 10);
         error_log("Transactions: " . print_r($transactions, true));
 
@@ -42,7 +37,6 @@ class Wallet extends Controller {
 
         $this->view('wallet/index', $data);
     }
-
 
     public function deposit() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -56,7 +50,6 @@ class Wallet extends Controller {
                 return;
             }
 
-            // Get USDT crypto_id
             $usdt = $this->cryptoModel->findBySymbol('USDT');
             if(!$usdt) {
                 flash('deposit_error', 'System error');
@@ -74,7 +67,6 @@ class Wallet extends Controller {
         }
     }
 
-    // Handle crypto purchase
     public function buy() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -100,7 +92,6 @@ class Wallet extends Controller {
         }
     }
 
-    // Handle crypto sale
     public function sell() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -126,7 +117,6 @@ class Wallet extends Controller {
         }
     }
 
-    // Handle crypto transfer
     public function transfer() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('wallet');
@@ -136,22 +126,18 @@ class Wallet extends Controller {
             $userId = $_SESSION['user_id'];
             
             $data = [
-                'recipient' => trim($_POST['recipient']), // This could be email or NexusID
+                'recipient' => trim($_POST['recipient']),
                 'crypto_id' => trim($_POST['crypto_id']),
                 'amount' => floatval(trim($_POST['amount'])),
                 'errors' => [],
-                // Add these required data for the view
                 'wallets' => $this->walletModel->getUserWallets($userId),
                 'transactions' => $this->transactionModel->getUserTransactions($userId, 10),
                 'cryptocurrencies' => $this->cryptoModel->getAllCryptos()
             ];
 
-            // Validate amount
             if ($data['amount'] <= 0) {
                 $data['errors']['amount'] = 'Amount must be greater than 0';
             }
-
-            // Find recipient
             $userModel = new \App\Models\User();
             $recipient = $userModel->findUserByEmailOrNexusId($data['recipient']);
             
@@ -159,7 +145,6 @@ class Wallet extends Controller {
                 $data['errors']['recipient'] = 'Recipient not found';
             }
 
-            // Check if sending to self
             if ($recipient && $recipient->id === $userId) {
                 $data['errors']['recipient'] = 'Cannot send to yourself';
             }
@@ -175,7 +160,6 @@ class Wallet extends Controller {
                 flash('wallet_success', 'Transfer completed successfully');
                 redirect('wallet');
             } else {
-                // Now the view will have all necessary data
                 flash('wallet_error', 'Please correct the errors below', 'alert alert-danger');
                 $this->view('wallet/index', $data);
             }
@@ -185,4 +169,4 @@ class Wallet extends Controller {
             redirect('wallet');
         }
     }
-}    
+}
