@@ -1,98 +1,129 @@
 <?php
-namespace App\Controllers;
 
-use App\Libraries\Controller;
-use App\Models\Cryptocurrency;
-use App\Models\Watchlist;
-use App\Services\CryptoService;
+namespace App\Models;
 
-class Markets extends Controller {
-    private $cryptoModel;
-    private $watchlistModel;
-    private $cryptoService;
+use App\Libraries\Database;
+use App\Libraries\DataBaseManager;
 
-    public function __construct() {
-//        if(!isLoggedIn()) {
-//            redirect('auth/login');
-//        }
+class Cryptocurrency
+{
+    private $dbmanager;
+    private $db;
+
+    public function __construct()
+    {
+        $this->dbmanager = new DataBaseManager;
+        $this->db = DataBase::getInstance();
+
+    }
+
+    // public function getAll() {
+    //     return $this->getAllCryptos();
+    // }
+
+    public function findById($id)
+    {
+        return $this->dbmanager->selectBy('cryptocurrencies', ['id' => $id]);
+    }
+
+    public function findBySymbol($symbol)
+    {
+        return $this->dbmanager->selectBy('cryptocurrencies', ['symbol' => $symbol]);
+    }
+
+//    public function updatePrice($id, $price) {
+//        $this->dbmanager->query("UPDATE cryptocurrencies
+//                         SET price = :price,
+//                             updated_at = CURRENT_TIMESTAMP
+//                         WHERE id = :id");
+//
+//        $this->dbmanager->bind(':id', $id);
+//        $this->dbmanager->bind(':price', $price);
+//
+//        return $this->dbmanager->execute();
+//    }
+
+    public function getAllCryptos()
+    {
+        $this->dbmanager->getConnection()->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC");
+        return $this->dbmanager->resultSet();
+    }
+
+    public function getTopCryptos($limit = 10)
+    {
+        $this->dbmanager->query("SELECT * FROM cryptocurrencies ORDER BY market_cap DESC LIMIT :limit");
+        $this->d->bind(':limit', $limit);
+        $result = $this->db->resultSet();
+        return array_map(function ($crypto) {
+            return (array)$crypto;
+        }, $result);
+    }
+
+    // hna dima kandir update l cyrpto
+    public function updateCryptoData($id, $data)
+    {
+        $this->dbmanager->query("UPDATE cryptocurrencies SET 
+            price = :price,
+            market_cap = :market_cap,
+            volume_24 = :volume_24,
+            circulating_supply = :circulating_supply,
+            max_supply = :max_supply
+            WHERE id = :id");
+
+        $this->dbmanager->bind(':id', $id);
+        $this->dbmanager->bind(':price', $data['price']);
+        $this->dbmanager->bind(':market_cap', $data['market_cap']);
+        $this->dbmanager->bind(':volume_24', $data['volume_24']);
+        $this->dbmanager->bind(':circulating_supply', $data['circulating_supply']);
+        $this->dbmanager->bind(':max_supply', $data['max_supply']);
+
+        return $this->dbmanager->execute();
+    }
+
+    public function updateOrInsert($data)
+    {
+        // Check if crypto kayn 😁
+//        $this->dbmanager->getConnection()->query("SELECT id FROM cryptocurrencies WHERE slug = 'bitcoin' ");
+//        $this->db->bind(':slug', $data['slug'] ; pdo);
+//        $crypto = $this->dbmanager->getConnection()->single();
+
+        $crypto = $this->dbmanager->selectBy('cryptocurrencies', ['slug' => $data['slug']]);
+        var_dump($crypto);
+
+        if ($crypto) {
+            // Update existing crypto
+
+
+            $dataUpdate = [
+                'name' => $data['name'],
+                'symbol' => $data['symbol'], // Correction ici
+                'price' => $data['price'],
+                'market_cap' => $data['market_cap'],
+                'volume_24' => $data['volume_24'],
+                'circulating_supply' => $data['circulating_supply'],
+                'max_supply' => $data['max_supply']
+            ];
+            $wheredataUpdate = ['slug' => $data['slug']];
+
+
+            $this->dbmanager->update('cryptocurrencies', $dataUpdate, $wheredataUpdate);
+
+
+        } else {
+            // Insert new crypto
+            $dataInsert = 
+                ['name' => $data['name'],
+                'symbol' => $data['symbol'],
+                'slug' => $data['symbol'],
+                 'price' => $data['price'],
+                'market_cap' => $data['market_cap'],
+                'volume_24' => $data['volume_24'],
+                'circulating_supply' => $data['circulating_supply'],
+                'max_supply' => $data['max_supply']];
+
+            return   $this->dbmanager->insert('cryptocurrencies', $dataInsert);}
+
+
         
-        $this->cryptoModel = new Cryptocurrency();
-        $this->watchlistModel = new Watchlist();
-        $this->cryptoService = new CryptoService();
     }
-
-    public function index() {
-        try {
-            // Get top cryptocurrencies
-            $topCryptos = $this->cryptoService->getTopCryptos();
-
-            //die();
-
-            if (!is_array($topCryptos) || empty($topCryptos)) {
-                throw new \Exception("Unable to fetch cryptocurrency data");
-            }
-
-
-            
-            // inseration des top dans la base de donnee
-            foreach($topCryptos as $crypto) {
-                echo "<pre>" ;
-                var_dump($crypto['slug']);;
-                $this->cryptoModel->updateOrInsert($crypto);
-                echo "</pre>";
-                die();
-
-
-            }
-
-            // Get user's watchlist and convert to array
-
-            $watchlist = $this->watchlistModel->getFavorites($_SESSION['user_id']);
-            $watchlist = $this->watchlistModel->getFavorites($_SESSION['user_id']);
-
-            // Convert watchlist crypto_ids to array for easy comparison
-            $watchlistIds = array_map(function($item) {
-                return $item['slug'];
-            }, $watchlist);
-
-            $data = [
-                'topCryptos' => $topCryptos,
-                'watchlist' => $watchlist,
-                'watchlistIds' => $watchlistIds
-            ];
-
-            $this->view('markets/index', $data);
-        } catch (\Exception $e) {
-            error_log("Markets Error: " . $e->getMessage());
-            $data = [
-                'error' => 'Unable to fetch cryptocurrency data. Please try again later.',
-                'topCryptos' => [],
-                'watchlist' => [],
-                'watchlistIds' => []
-            ];
-            $this->view('markets/index', $data);
-        }
-    }
-
-    public function toggleWatchlist() {
-        if($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-            
-            $cryptoId = trim($_POST['crypto_id']);
-            
-            if($this->watchlistModel->isFavorite($_SESSION['user_id'], $cryptoId)) {
-                if($this->watchlistModel->removeFavorite($_SESSION['user_id'], $cryptoId)) {
-                    echo json_encode(['success' => true, 'action' => 'removed']);
-                    return;
-                }
-            } else {
-                if($this->watchlistModel->addFavorite($_SESSION['user_id'], $cryptoId)) {
-                    echo json_encode(['success' => true, 'action' => 'added']);
-                    return;
-                }
-            }
-            
-            echo json_encode(['success' => false]);
-        }
-    }
-} 
+}
